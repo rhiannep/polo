@@ -15,18 +15,17 @@ module Polo
       end
 
       def add_upsert_to_insert(insert, record)
+        if record.is_a?(Hash)
+          return naive_update_insert(insert, record)
+        end
+
         attrs = record.is_a?(Hash) ? record.fetch(:values) : record.attributes
-        values_syntax = attrs.keys.map do |key|
+        values_syntax = attrs.keys.reject { |key| key.to_s == 'id' }.map do |key|
           %{"#{key}" = EXCLUDED."#{key}"}
         end
 
-        on_dup_syntax = if record.is_a?(Hash)
-                          # Any other conflict
-                          "ON CONFLICT WHERE 1=1 DO UPDATE #{values_syntax.join(', ')}"
-                        else
-                          # Conflict on id column
-                          "ON CONFLICT (#{record.class.primary_key}) DO UPDATE #{values_syntax.join(', ')}"
-                        end
+        # Conflict on id column
+        on_dup_syntax = "ON CONFLICT (#{record.class.primary_key}) DO UPDATE SET #{values_syntax.join(', ')}"
 
         "#{insert} #{on_dup_syntax}"
       end
