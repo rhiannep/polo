@@ -19,7 +19,7 @@ module Polo
           return naive_update_insert(insert, record)
         end
 
-        attrs = record.is_a?(Hash) ? record.fetch(:values) : record.attributes
+        attrs = record.is_a?(Hash) ? record.fetch(:values) : record.attributes.slice(*record.class.column_names)
         values_syntax = attrs.keys.reject { |key| key.to_s == 'id' }.map do |key|
           %{"#{key}" = EXCLUDED."#{key}"}
         end
@@ -33,7 +33,7 @@ module Polo
       def naive_update_insert(insert, record)
         table_name, id = table_name_and_key_for(record)
 
-        attrs = record.is_a?(Hash) ? record.fetch(:values) : record.attributes_before_type_cast
+        attrs = record.is_a?(Hash) ? record.fetch(:values) : record.attributes_before_type_cast.slice(*record.class.column_names)
         updates = attrs.except('id').map do |key, value|
           column = ActiveRecord::Base.connection.send(:quote_column_name, key)
 
