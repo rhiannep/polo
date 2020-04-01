@@ -38,7 +38,7 @@ module Polo
         sql = payload[:sql]
         if payload[:name] =~ /^HABTM_.* Load$/
           collect_sql(connection: @base_class.connection, sql: sql)
-        elsif payload[:name] =~ /^(.*) Load$/
+        elsif payload[:name] =~ /^(.*) Load$/ && payload[:binds].nil?
           begin
             class_name = $1.constantize
             collect_sql(klass: class_name, sql: sql)
