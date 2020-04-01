@@ -14,9 +14,10 @@ module Polo
     # ActiveSupport::Notifications block and collecting every generate SQL query.
     #
     def collect
+      base_finder = @base_class.includes(@dependency_tree).where(@base_class.primary_key => @id)
+
       unprepared_statement do
         ActiveSupport::Notifications.subscribed(collector, 'sql.active_record') do
-          base_finder = @base_class.includes(@dependency_tree).where(@base_class.primary_key => @id)
           base_finder.to_a
         end
       end
